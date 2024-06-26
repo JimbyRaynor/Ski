@@ -6,13 +6,11 @@ import time
 mainwin = Tk(className=" Ski")
 
 mainwin.geometry("800x680")
-
 # playground
 canvas1= Canvas(mainwin,width=800,height=600, bg = "white")
 canvas1.place(x=0,y=0)
 
 # player class (template)
-
 class GameObject:
     def __init__(self,filedown="",fileleft="",fileright="",x=0,y=0,cr=0,cdx=0,cdy=0):
         self.x = x
@@ -20,8 +18,9 @@ class GameObject:
         self.cr = cr # collision radius
         self.cdx = cdx # collision x-offset
         self.cdy = cdy # collision y-offset
+        self.collisioncircleimage = None
+        self.collisioncircle = False
         self.image = PhotoImage(file=filedown).zoom(2,2)
-        #self.sprite = canvas1.create_image(2,2,anchor=NW,image=self.image)
         self.sprite = canvas1.create_image(2,2,image=self.image)
         if fileleft != "":
            self.imageleft = PhotoImage(file=fileleft)
@@ -32,32 +31,34 @@ class GameObject:
         self.x = self.x + dx
         self.y = self.y + dy
         canvas1.move(self.sprite,dx,dy)
+        if self.collisioncircle:
+            canvas1.delete(self.collisioncircleimage) # delete old collision circle
+            self.showcollisioncircle()
     def faceleft(self):
         canvas1.itemconfigure(self.sprite,image=self.imageleft)
     def faceright(self):
         canvas1.itemconfigure(self.sprite,image=self.imageright)
     def facedown(self):
         canvas1.itemconfigure(self.sprite,image=self.image)
-        
-
+    def showcollisioncircle(self):
+        self.collisioncircle = True
+        self.collisioncircleimage = canvas1.create_oval(self.x-self.cr+self.cdx,\
+                                      self.y-self.cr+self.cdy,\
+                                      self.x+self.cr+self.cdx,\
+                                      self.y+self.cr+self.cdy)
+             
 player1 = GameObject("skier.png","skier2.png","skier3.png",x=390,y=200,cr=11,cdx=2,cdy=0)
+#player1.showcollisioncircle()  # for debugging collisions
 
+# create mountain obstacles 
 mountain = []
 mdx = 0 # move mountain amount
 mdy = -2
-
 for i in range(100):
-    mountain.append(GameObject("flag1.png",\
-      x=random.randint(1,800),y=400+random.randint(1,2000),cr=11,cdx=2,cdy=6))
-
-
-circles = []
-def trace(myobject):
-    debugcircle = canvas1.create_oval(myobject.x-myobject.cr+myobject.cdx,\
-                                      myobject.y-myobject.cr+myobject.cdy,\
-                                      myobject.x+myobject.cr+myobject.cdx,\
-                                      myobject.y+myobject.cr+myobject.cdy)
-    circles.append(debugcircle)
+    flag1 = GameObject("flag1.png",\
+            x=random.randint(1,800),y=400+random.randint(1,2000),cr=11,cdx=2,cdy=6)
+    mountain.append(flag1)
+    #flag1.showcollisioncircle()  # for debugging collisions
     
 def checkcollision(object1, object2):
     if (object1.x+object1.cdx - object2.x-object2.cdx)**2+\
@@ -67,19 +68,12 @@ def checkcollision(object1, object2):
     else:
        return False
     
-
 def timerupdate():
-    # debug collision circles
-    #for circle in circles:
-       #canvas1.delete(circle)
-    #circles.clear()
-    #trace(player1)
     for m in mountain:
         m.move(mdx,mdy)
         if checkcollision(m,player1):
-            print("Collision")
-        # debug collision circles
-        #trace(m)   
+            print("You Crashed")
+            exit()
     mainwin.after(50,timerupdate)
 
 def mykey(event):
