@@ -20,12 +20,6 @@ class GameObject:
         self.cdy = cdy # collision circle y-offset
         self.collisioncircleimage = None
         self.collisioncircle = False
-        self.ctlx = 0 # collision rectangle top left x-offset
-        self.ctly = 0 # collision rectangle top left y-offset
-        self.cbrx = 0 # collision rectangle bottom right x-offset
-        self.cbry = 0 # collision rectangle bottom right y-offset
-        self.collisionrectimage = None
-        self.collisionrect = False
         self.image = PhotoImage(file=filedown).zoom(2,2)
         self.sprite = canvas1.create_image(2,2,image=self.image)
         if fileleft != "":
@@ -40,9 +34,6 @@ class GameObject:
         if self.collisioncircle:
             canvas1.delete(self.collisioncircleimage) # delete old collision circle
             self.showcollisioncircle()
-        if self.collisionrect:
-            canvas1.delete(self.collisionrectimage) # delete old collision circle
-            self.showcollisionrect()
     def faceleft(self):
         canvas1.itemconfigure(self.sprite,image=self.imageleft)
     def faceright(self):
@@ -55,23 +46,19 @@ class GameObject:
                                       self.y-self.cr+self.cdy,\
                                       self.x+self.cr+self.cdx,\
                                       self.y+self.cr+self.cdy)
-    def showcollisionrect(self):
-        self.collisionrect = True
-        self.collisionrectimage =  canvas1.create_rectangle(self.x+self.ctlx,\
-                                    self.y+self.ctly,\
-                                    self.x+self.cbrx,\
-                                    self.y+self.cbry)
+
+# mountain ice
+mountainice = []
+for i in range(100):
+    ice1 = GameObject("ice.png",\
+            x=random.randint(1,800),y=400+random.randint(1,2000),cr=0,cdx=0,cdy=0)
+    mountainice.append(ice1)
              
-player1 = GameObject("skier.png","skier2.png","skier3.png",x=390,y=200,cr=11,cdx=2,cdy=0)
-#player1.showcollisioncircle()  # for debugging collisions
-player1.ctlx = -4 # collision rectangle top left x-offset
-player1.ctly = -20 # collision rectangle top left y-offset
-player1.cbrx = 4 # collision rectangle bottom right x-offset
-player1.cbry = 20 # collision rectangle bottom right y-offset
-player1.showcollisionrect()
+player1 = GameObject("skier.png","skier2.png","skier3.png",x=390,y=200,cr=10,cdx=2,cdy=0)
+player1.showcollisioncircle()  # for debugging collisions
         
 
-# create mountain obstacles 
+# create mountain obstacles
 mountain = []
 mdx = 0 # move mountain amount
 mdy = -2
@@ -79,11 +66,11 @@ for i in range(100):
     flag1 = GameObject("flag1.png",\
             x=random.randint(1,800),y=400+random.randint(1,2000),cr=11,cdx=2,cdy=6)
     mountain.append(flag1)
-    #flag1.showcollisioncircle()  # for debugging collisions
+    flag1.showcollisioncircle()  # for debugging collisions
 
 for i in range(30):
     tree1 = GameObject("tree.png",\
-            x=random.randint(1,800),y=400+random.randint(1,2000),cr=11,cdx=2,cdy=6)
+            x=random.randint(1,800),y=400+random.randint(1,2000),cr=11,cdx=2,cdy=10)
     tree1.showcollisioncircle()
     mountain.append(tree1)
     
@@ -101,6 +88,8 @@ def timerupdate():
         if checkcollision(m,player1):
             print("You Crashed")
             #exit()
+    for m in mountainice:
+        m.move(mdx,mdy)    
     mainwin.after(50,timerupdate)
 
 def mykey(event):
