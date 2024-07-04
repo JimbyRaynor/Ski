@@ -53,6 +53,22 @@ for i in range(100):
     ice1 = GameObject("ice.png",\
             x=random.randint(1,800),y=400+random.randint(1,2000),cr=0,cdx=0,cdy=0)
     mountainice.append(ice1)
+
+
+def adddirt(xloc=400,yloc=400):
+    icecircle1 = GameObject("circletl.png",x=xloc,y=yloc,cr=10,cdx=6,cdy=4)
+    icecircle1.showcollisioncircle()
+    icecircle2 = GameObject("circletr.png",x=xloc+32,y=yloc,cr=10,cdx=-6,cdy=4)
+    icecircle2.showcollisioncircle()
+    icecircle3 = GameObject("circlebl.png",x=xloc,y=yloc+32,cr=10,cdx=6,cdy=-4)
+    icecircle3.showcollisioncircle()
+    icecircle4 = GameObject("circlebr.png",x=xloc+32,y=yloc+32,cr=10,cdx=-6,cdy=-4)
+    icecircle4.showcollisioncircle()
+    mountainice.extend([icecircle1,icecircle2,icecircle3,icecircle4])
+
+
+for i in range(100):
+    adddirt(xloc=random.randint(1,800),yloc=400+random.randint(1,2000))
              
 player1 = GameObject("skier.png","skier2.png","skier3.png",x=390,y=200,cr=10,cdx=2,cdy=0)
 player1.showcollisioncircle()  # for debugging collisions
