@@ -12,16 +12,12 @@ canvas1.place(x=0,y=0)
 
 # player class (template)
 class GameObject:
-    def __init__(self,filedown="",fileleft="",fileright="",x=0,y=0,cr=0,cdx=0,cdy=0):
+    def __init__(self,filedown="",fileleft="",fileright="",x=0,y=0):
         self.x = x
         self.y = y
-        self.cr = cr # collision circle radius
-        self.cdx = cdx # collision circle x-offset
-        self.cdy = cdy # collision circle y-offset
         self.collisioncirclelist = []
         self.collisioncircleimages = []
-        self.collisioncircleimage = None
-        self.collisioncircle = False
+        self.collisioncircleshow = False
         self.image = PhotoImage(file=filedown).zoom(2,2)
         self.sprite = canvas1.create_image(2,2,image=self.image)
         if fileleft != "":
@@ -33,27 +29,18 @@ class GameObject:
         self.x = self.x + dx
         self.y = self.y + dy
         canvas1.move(self.sprite,dx,dy)
-        if self.collisioncircle:
-            canvas1.delete(self.collisioncircleimage) # delete old collision circle
+        if self.collisioncircleshow:
             for circle in self.collisioncircleimages:
                 canvas1.delete(circle)
-            self.showcollisioncircle()
-            self.showcollisioncircles()
-            
+            self.showcollisioncircles()      
     def faceleft(self):
         canvas1.itemconfigure(self.sprite,image=self.imageleft)
     def faceright(self):
         canvas1.itemconfigure(self.sprite,image=self.imageright)
     def facedown(self):
         canvas1.itemconfigure(self.sprite,image=self.image)
-    def showcollisioncircle(self):
-        self.collisioncircle = True
-        self.collisioncircleimage = canvas1.create_oval(self.x-self.cr+self.cdx,\
-                                      self.y-self.cr+self.cdy,\
-                                      self.x+self.cr+self.cdx,\
-                                      self.y+self.cr+self.cdy)
     def showcollisioncircles(self):
-        self.collisioncircle = True
+        self.collisioncircleshow = True
         self.collisioncircleimages.clear()
         for c in self.collisioncirclelist:  # c0 = r, c1 = dx, c2 = dy
             myimage = canvas1.create_oval(self.x-c[0]+c[1],\
@@ -62,13 +49,11 @@ class GameObject:
                                       self.y+c[0]+c[2])
             self.collisioncircleimages.append(myimage)
             
-            
-
 # mountain ice
 mountainice = []
 for i in range(100):
     ice1 = GameObject("ice.png",\
-            x=random.randint(1,800),y=400+random.randint(1,2000),cr=0,cdx=0,cdy=0)
+            x=random.randint(1,800),y=400+random.randint(1,2000))
     mountainice.append(ice1)
 
 
@@ -84,8 +69,7 @@ for i in range(100):
              
 player1 = GameObject("skier.png","skier2.png","skier3.png",x=390,y=200)
 player1.collisioncirclelist.append((10,2,0))
-player1.showcollisioncircle()  # for debugging collisions
-player1.showcollisioncircles()
+player1.showcollisioncircles()    # for debugging collisions
         
 
 # create mountain obstacles
@@ -96,25 +80,16 @@ for i in range(100):
     flag1 = GameObject("flag1.png",\
             x=random.randint(1,800),y=400+random.randint(1,2000))
     flag1.collisioncirclelist.append((11,2,6))
-    mountain.append(flag1)
-    flag1.showcollisioncircle()  # for debugging collisions
-    flag1.showcollisioncircles()
+    mountain.append(flag1) 
+    flag1.showcollisioncircles() # for debugging collisions
 
 for i in range(30):
     tree1 = GameObject("tree.png",\
             x=random.randint(1,800),y=400+random.randint(1,2000))
-    tree1.collisioncirclelist.append((11,2,10))
-    tree1.showcollisioncircle()
+    tree1.collisioncirclelist.extend([(11,2,10),(6,2,-10)])
+    tree1.showcollisioncircles() # for debugging collisions
     mountain.append(tree1)
     
-def checkcollision(object1, object2):
-    if (object1.x+object1.cdx - object2.x-object2.cdx)**2+\
-       (object1.y+object1.cdy - object2.y-object2.cdy)**2\
-       < (object1.cr+object2.cr)**2:
-       return True
-    else:
-       return False
-
 def checkcollisioncircles(object1, object2):
     for c1 in object1.collisioncirclelist:
         for c2 in object2.collisioncirclelist:  # c0 = r, c1 = dx, c2 = dy
@@ -122,15 +97,11 @@ def checkcollisioncircles(object1, object2):
              (object1.y+c1[2] - object2.y-c2[2])**2\
              < (c1[0]+c2[0])**2:
                return True
-          else:
-               return False
+    return False
     
 def timerupdate():
     for m in mountain:
         m.move(mdx,mdy)
-        if checkcollision(m,player1):
-            print("You Crashed")
-            #exit()
         if checkcollisioncircles(m,player1):
             print("Circles Crash ;)");
     for m in mountainice:
