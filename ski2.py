@@ -18,6 +18,8 @@ class GameObject:
         self.cr = cr # collision circle radius
         self.cdx = cdx # collision circle x-offset
         self.cdy = cdy # collision circle y-offset
+        self.collisioncirclelist = []
+        self.collisioncircleimages = []
         self.collisioncircleimage = None
         self.collisioncircle = False
         self.image = PhotoImage(file=filedown).zoom(2,2)
@@ -33,7 +35,11 @@ class GameObject:
         canvas1.move(self.sprite,dx,dy)
         if self.collisioncircle:
             canvas1.delete(self.collisioncircleimage) # delete old collision circle
+            for circle in self.collisioncircleimages:
+                canvas1.delete(circle)
             self.showcollisioncircle()
+            self.showcollisioncircles()
+            
     def faceleft(self):
         canvas1.itemconfigure(self.sprite,image=self.imageleft)
     def faceright(self):
@@ -46,6 +52,17 @@ class GameObject:
                                       self.y-self.cr+self.cdy,\
                                       self.x+self.cr+self.cdx,\
                                       self.y+self.cr+self.cdy)
+    def showcollisioncircles(self):
+        self.collisioncircle = True
+        self.collisioncircleimages.clear()
+        for c in self.collisioncirclelist:  # c0 = r, c1 = dx, c2 = dy
+            myimage = canvas1.create_oval(self.x-c[0]+c[1],\
+                                      self.y-c[0]+c[2],\
+                                      self.x+c[0]+c[1],\
+                                      self.y+c[0]+c[2])
+            self.collisioncircleimages.append(myimage)
+            
+            
 
 # mountain ice
 mountainice = []
@@ -56,22 +73,19 @@ for i in range(100):
 
 
 def adddirt(xloc=400,yloc=400):
-    icecircle1 = GameObject("circletl.png",x=xloc,y=yloc,cr=10,cdx=6,cdy=4)
-    icecircle1.showcollisioncircle()
-    icecircle2 = GameObject("circletr.png",x=xloc+32,y=yloc,cr=10,cdx=-6,cdy=4)
-    icecircle2.showcollisioncircle()
-    icecircle3 = GameObject("circlebl.png",x=xloc,y=yloc+32,cr=10,cdx=6,cdy=-4)
-    icecircle3.showcollisioncircle()
-    icecircle4 = GameObject("circlebr.png",x=xloc+32,y=yloc+32,cr=10,cdx=-6,cdy=-4)
-    icecircle4.showcollisioncircle()
-    mountainice.extend([icecircle1,icecircle2,icecircle3,icecircle4])
+    icecircle = GameObject("circle.png",x=xloc,y=yloc)
+    icecircle.collisioncirclelist.append((16,0,0))
+    icecircle.showcollisioncircles()
+    mountainice.extend([icecircle])
 
 
 for i in range(100):
     adddirt(xloc=random.randint(1,800),yloc=400+random.randint(1,2000))
              
-player1 = GameObject("skier.png","skier2.png","skier3.png",x=390,y=200,cr=10,cdx=2,cdy=0)
+player1 = GameObject("skier.png","skier2.png","skier3.png",x=390,y=200)
+player1.collisioncirclelist.append((10,2,0))
 player1.showcollisioncircle()  # for debugging collisions
+player1.showcollisioncircles()
         
 
 # create mountain obstacles
@@ -80,13 +94,16 @@ mdx = 0 # move mountain amount
 mdy = -2
 for i in range(100):
     flag1 = GameObject("flag1.png",\
-            x=random.randint(1,800),y=400+random.randint(1,2000),cr=11,cdx=2,cdy=6)
+            x=random.randint(1,800),y=400+random.randint(1,2000))
+    flag1.collisioncirclelist.append((11,2,6))
     mountain.append(flag1)
     flag1.showcollisioncircle()  # for debugging collisions
+    flag1.showcollisioncircles()
 
 for i in range(30):
     tree1 = GameObject("tree.png",\
-            x=random.randint(1,800),y=400+random.randint(1,2000),cr=11,cdx=2,cdy=10)
+            x=random.randint(1,800),y=400+random.randint(1,2000))
+    tree1.collisioncirclelist.append((11,2,10))
     tree1.showcollisioncircle()
     mountain.append(tree1)
     
@@ -97,6 +114,16 @@ def checkcollision(object1, object2):
        return True
     else:
        return False
+
+def checkcollisioncircles(object1, object2):
+    for c1 in object1.collisioncirclelist:
+        for c2 in object2.collisioncirclelist:  # c0 = r, c1 = dx, c2 = dy
+          if (object1.x+c1[1] - object2.x-c2[1])**2+\
+             (object1.y+c1[2] - object2.y-c2[2])**2\
+             < (c1[0]+c2[0])**2:
+               return True
+          else:
+               return False
     
 def timerupdate():
     for m in mountain:
@@ -104,6 +131,8 @@ def timerupdate():
         if checkcollision(m,player1):
             print("You Crashed")
             #exit()
+        if checkcollisioncircles(m,player1):
+            print("Circles Crash ;)");
     for m in mountainice:
         m.move(mdx,mdy)    
     mainwin.after(50,timerupdate)
