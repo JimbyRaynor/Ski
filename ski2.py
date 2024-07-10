@@ -86,7 +86,7 @@ for i in range(100):
 for i in range(30):
     tree1 = GameObject("tree.png",\
             x=random.randint(1,800),y=400+random.randint(1,2000))
-    tree1.collisioncirclelist.extend([(11,2,10),(6,2,-10)])
+    tree1.collisioncirclelist.extend([(11,2,10),(6,2,-6)])
     tree1.showcollisioncircles() # for debugging collisions
     mountain.append(tree1)
     
