@@ -51,21 +51,18 @@ class GameObject:
             
 # mountain ice
 mountainice = []
-for i in range(100):
-    ice1 = GameObject("ice.png",\
-            x=random.randint(1,800),y=400+random.randint(1,2000))
-    mountainice.append(ice1)
-
 
 def adddirt(xloc=400,yloc=400):
     icecircle = GameObject("circle.png",x=xloc,y=yloc)
     icecircle.collisioncirclelist.append((16,0,0))
-    icecircle.showcollisioncircles()
+    #icecircle.showcollisioncircles() # for debugging collisions
     mountainice.extend([icecircle])
 
 
-for i in range(100):
-    adddirt(xloc=random.randint(1,800),yloc=400+random.randint(1,2000))
+for i in range(40):
+    for j in range(200):
+        if random.randint(1,10) == 1:
+          adddirt(i*50,j*50)
              
 player1 = GameObject("skier.png","skier2.png","skier3.png",x=390,y=200)
 player1.collisioncirclelist.append((10,2,0))
@@ -76,19 +73,26 @@ player1.showcollisioncircles()    # for debugging collisions
 mountain = []
 mdx = 0 # move mountain amount
 mdy = -2
-for i in range(100):
-    flag1 = GameObject("flag1.png",\
-            x=random.randint(1,800),y=400+random.randint(1,2000))
-    flag1.collisioncirclelist.append((11,2,6))
-    mountain.append(flag1) 
-    flag1.showcollisioncircles() # for debugging collisions
 
-for i in range(30):
-    tree1 = GameObject("tree.png",\
-            x=random.randint(1,800),y=400+random.randint(1,2000))
-    tree1.collisioncirclelist.extend([(11,2,10),(6,2,-6)])
-    tree1.showcollisioncircles() # for debugging collisions
-    mountain.append(tree1)
+def addflag(xloc=400,yloc=400):
+    img = GameObject("flag1.png",x=xloc,y=yloc)
+    img.collisioncirclelist.append((11,2,6))
+    #img.showcollisioncircles()  # for debugging collisions
+    mountain.append(img)
+
+def addtree(xloc=400,yloc=400):
+    img = GameObject("tree.png",x=xloc,y=yloc)
+    img.collisioncirclelist.extend([(11,2,10),(6,2,-6)])
+    #img.showcollisioncircles()  # for debugging collisions
+    mountain.append(img)
+
+for i in range(40):
+    for j in range(200):
+        r = random.randint(1,20)
+        if r == 1:
+            addflag(i*30,j*30)
+        if r == 2:
+            addtree(i*30,j*30)  
     
 def checkcollisioncircles(object1, object2):
     for c1 in object1.collisioncirclelist:
