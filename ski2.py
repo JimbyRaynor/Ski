@@ -11,8 +11,7 @@ mainwin.geometry("800x680")
 canvas1= Canvas(mainwin,width=800,height=600, bg = "white")
 canvas1.place(x=0,y=0)
 
-speed = 1
-theta = 3*math.pi/2
+speed = 1  # mountain is moving up at 1 pixel per 20ms
 
 
 # player class (template)
@@ -20,6 +19,7 @@ class GameObject:
     def __init__(self,filedown="",fileleft="",fileright="",x=0,y=0):
         self.x = x
         self.y = y
+        self.theta = 270  # skier is facing down (degrees)
         self.collisioncirclelist = []
         self.collisioncircleimages = []
         self.collisioncircleshow = False
@@ -38,12 +38,13 @@ class GameObject:
             for circle in self.collisioncircleimages:
                 canvas1.delete(circle)
             self.showcollisioncircles()      
-    def faceleft(self):
-        canvas1.itemconfigure(self.sprite,image=self.imageleft)
-    def faceright(self):
-        canvas1.itemconfigure(self.sprite,image=self.imageright)
-    def facedown(self):
-        canvas1.itemconfigure(self.sprite,image=self.image)
+    def facedirection(self):
+        if player1.theta == 270-45:
+            canvas1.itemconfigure(self.sprite,image=self.imageleft)
+        elif player1.theta == 270+45:
+            canvas1.itemconfigure(self.sprite,image=self.imageright)
+        else:  # theta = 270
+            canvas1.itemconfigure(self.sprite,image=self.image)
     def showcollisioncircles(self):
         self.collisioncircleshow = True
         self.collisioncircleimages.clear()
@@ -100,7 +101,7 @@ addwalls()
 # add trees and flags
 for i in range(40):
     for j in range(80):
-        r = random.randint(1,20)
+        r = random.randint(1,60)
         if r == 1:
             addflag(i*30+20,j*30+400)
         if r == 2:
@@ -115,20 +116,12 @@ def checkcollisioncircles(object1, object2):
                return True
     return False
 
-def sign(x):
-    if x > 0:
-        return 1
-    elif x < 0:
-        return -1
-    else:
-        return 0
-
 def timerupdate():
     global speed
     speed = speed + 0.03
     if speed >= 8: speed = 8
-    mdy = speed*math.sin(theta)
-    mdx = -speed*math.cos(theta)
+    mdy = speed*math.sin(player1.theta*math.pi/180)  # convert to radians
+    mdx = -speed*math.cos(player1.theta*math.pi/180)
     for m in mountain:
         m.move(mdx,mdy)
         if checkcollisioncircles(m,player1):
@@ -138,28 +131,19 @@ def timerupdate():
         m.move(mdx,mdy)
     mainwin.after(20,timerupdate)
 
-def sign(x):
-    if x > 0:
-        return 1
-    elif x < 0:
-        return -1
-    else:
-        return 0
 
 def mykey(event):
-    global theta
-    if event.char == "w":
-        theta = math.pi/2
-        player1.facedown()
-    if event.char == "d":
-        theta = -math.pi/4
-        player1.faceright()
-    if event.char == "a":
-        theta = 5*math.pi/4
-        player1.faceleft()
+    global theta, speed
     if event.char == "s":
-        theta = 3*math.pi/2
-        player1.facedown()
+        speed = speed - 2
+        if speed <= 1: speed = 1
+    if event.char == "d":
+        player1.theta = player1.theta + 45 # player rotate left
+        if player1.theta > 270+45: player1.theta = 270+45
+    if event.char == "a":
+        player1.theta = player1.theta - 45 # player rotate right
+        if player1.theta < 270-45: player1.theta = 270-45
+    player1.facedirection()
 
 mainwin.bind("<Key>", mykey)
 timerupdate()
