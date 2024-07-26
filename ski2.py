@@ -4,12 +4,37 @@ import os
 import time
 import math
 
+time = 0
+
 mainwin = Tk(className=" Ski")
 
 mainwin.geometry("800x680")
 # playground
 canvas1= Canvas(mainwin,width=800,height=600, bg = "white")
 canvas1.place(x=0,y=0)
+
+# status text box frame
+canvas2= Canvas(mainwin,width=798,height=78, bg = "grey")
+canvas2.place(x=0,y=600)
+
+# Print text (labels) on screen
+canvastext= Canvas(mainwin,width=784,height=64, bg = "dark blue")
+canvastext.place(x=6,y=607)
+font1 = ("Arial",16,"bold")
+fontBIG = ("Arial",64,"bold") 
+def printscr(mytext,x,y,mycolour):
+    canvastext.create_text(x,y,text=mytext, fill=mycolour,font=font1, anchor="sw") 
+def printBIG(mytext,x,y,mycolour):
+    canvas1.create_text(x,y,text=mytext, fill=mycolour,font=fontBIG, anchor="sw") 
+
+def printscore():
+    printscr("Keyboard Controls: a,s,d",70,28,"white")
+    printscr("Left (a)      Slow Down (s)      Right (d)",15,58,"white")
+    printscr("Time: "+str(time)+" s",600,24,"white")
+    printscr("Best: "+str(time)+" s",600,58,"white")
+
+printscore()
+
 
 speed = 1  # mountain is moving up at 1 pixel per 20ms
 
@@ -54,12 +79,13 @@ class GameObject:
                                       self.x+c[0]+c[1],\
                                       self.y+c[0]+c[2])
             self.collisioncircleimages.append(myimage)
-            
+
+xshift = -200   # move all objects in mountain by a fixed amount            
 # mountain ice
 mountainice = []
 
 def adddirt(xloc=400,yloc=400):
-    icecircle = GameObject("circle.png",x=xloc,y=yloc)
+    icecircle = GameObject("circle.png",x=xloc+xshift,y=yloc)
     icecircle.collisioncirclelist.append((16,0,0))
     #icecircle.showcollisioncircles() # for debugging collisions
     mountainice.extend([icecircle])
@@ -70,7 +96,7 @@ for i in range(24):
         if random.randint(1,10) == 1:
           adddirt(i*50+20,j*50+400)
              
-player1 = GameObject("skier.png","skier2.png","skier3.png",x=390,y=200)
+player1 = GameObject("skier.png","skier2.png","skier3.png",x=400,y=200)
 player1.collisioncirclelist.append((10,2,0))
 #player1.showcollisioncircles()    # for debugging collisions
         
@@ -78,14 +104,15 @@ player1.collisioncirclelist.append((10,2,0))
 # create mountain obstacles
 mountain = []
 
+
 def addflag(xloc=400,yloc=400):
-    img = GameObject("flag1.png",x=xloc,y=yloc)
+    img = GameObject("flag1.png",x=xloc+xshift,y=yloc)
     img.collisioncirclelist.append((11,2,6))
     #img.showcollisioncircles()  # for debugging collisions
     mountain.append(img)
 
 def addtree(xloc=400,yloc=400):
-    img = GameObject("tree.png",x=xloc,y=yloc)
+    img = GameObject("tree.png",x=xloc+xshift,y=yloc)
     img.collisioncirclelist.extend([(11,2,10),(6,2,-6)])
     #img.showcollisioncircles()  # for debugging collisions
     mountain.append(img)
