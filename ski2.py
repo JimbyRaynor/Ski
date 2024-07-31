@@ -4,7 +4,14 @@ import os
 import time
 import math
 
-time = 0
+### constant parameters ##########################
+mountainheight = 80   # in metres, approx, normally = 80
+refreshrate = 20 # in ms, normally = 20
+treedensity = 40 # higher = less trees ;), normally = 40
+#################################################
+
+besttime = 0
+starttime = time.time()
 
 mainwin = Tk(className=" Ski")
 
@@ -30,9 +37,10 @@ def printBIG(mytext,x,y,mycolour):
 def printscore():
     printscr("Keyboard Controls: a,s,d",70,28,"white")
     printscr("Left (a)      Slow Down (s)      Right (d)",15,58,"white")
-    printscr("Time: "+str(time)+" s",600,24,"white")
-    printscr("Best: "+str(time)+" s",600,58,"white")
+    printscr("Time: ",600,24,"white")
+    printscr("Best: "+str(besttime)+" s",600,58,"white")
 
+timetext = canvastext.create_text(660,24,text="0ms",fill="white",font=font1,anchor="sw")
 printscore()
 
 
@@ -92,9 +100,9 @@ def adddirt(xloc=400,yloc=400):
 
 # add dirt
 for i in range(24):
-    for j in range(40):
+    for j in range(int(30*mountainheight/50)):
         if random.randint(1,10) == 1:
-          adddirt(i*50+20,j*50+400)
+          adddirt(i*50+20,j*50+500)
              
 player1 = GameObject("skier.png","skier2.png","skier3.png",x=400,y=200)
 player1.collisioncirclelist.append((10,2,0))
@@ -118,21 +126,22 @@ def addtree(xloc=400,yloc=400):
     mountain.append(img)
 
 def addwalls():
-    for j in range(80):
+    for j in range(int(30*mountainheight/35)+10):
         addtree(10,j*35+400)  # left
         addtree(1200,j*35+400) # right
-        addtree(j*35,3200) # bottom
+    for j in range(35):  
+        addtree(j*35,30*(mountainheight+10)+400) # bottom
 
 
 addwalls()
 # add trees and flags
 for i in range(40):
-    for j in range(80):
-        r = random.randint(1,60)
+    for j in range(mountainheight):
+        r = random.randint(1,treedensity)
         if r == 1:
-            addflag(i*30+20,j*30+400)
+            addflag(i*30+20,j*30+500)
         if r == 2:
-            addtree(i*30+20,j*30+400)  
+            addtree(i*30+20,j*30+500)  
     
 def checkcollisioncircles(object1, object2):
     for c1 in object1.collisioncirclelist:
@@ -156,7 +165,9 @@ def timerupdate():
             speed = 1
     for m in mountainice:
         m.move(mdx,mdy)
-    mainwin.after(20,timerupdate)
+    mytime = str(time.time()-starttime)[:5]
+    canvastext.itemconfigure(timetext, text = mytime+" s")
+    mainwin.after(refreshrate,timerupdate)
 
 
 def mykey(event):
