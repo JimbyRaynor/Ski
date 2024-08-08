@@ -5,13 +5,14 @@ import time
 import math
 
 ### constant parameters ##########################
-mountainheight = 80   # in metres, approx, normally = 80
+mountainheight = 20   # in metres, approx, normally = 80
 refreshrate = 20 # in ms, normally = 20
 treedensity = 40 # higher = less trees ;), normally = 40
 #################################################
 
 besttime = 0
 starttime = time.time()
+player1alive = True
 
 mainwin = Tk(className=" Ski")
 
@@ -105,12 +106,15 @@ for i in range(24):
           adddirt(i*50+20,j*50+500)
              
 player1 = GameObject("skier.png","skier2.png","skier3.png",x=400,y=200)
-player1.collisioncirclelist.append((10,2,0))
+player1.collisioncirclelist.append((7,2,0))
 #player1.showcollisioncircles()    # for debugging collisions
         
+finishline = GameObject("FinishLine.png",x=400,y=30*(mountainheight+6)+400)
 
 # create mountain obstacles
 mountain = []
+
+mountain.append(finishline)
 
 
 def addflag(xloc=400,yloc=400):
@@ -152,8 +156,16 @@ def checkcollisioncircles(object1, object2):
                return True
     return False
 
+def checkfinishline():
+    if (player1.y > finishline.y) and (player1.x > finishline.x-100)\
+       and ((player1.x < finishline.x+100)) and (player1.y < finishline.y+10):
+        return True
+    else:
+        return False
+
 def timerupdate():
-    global speed
+    global speed, player1alive
+    if player1alive == False: return
     speed = speed + 0.03
     if speed >= 8: speed = 8
     mdy = speed*math.sin(player1.theta*math.pi/180)  # convert to radians
@@ -163,9 +175,13 @@ def timerupdate():
         if checkcollisioncircles(m,player1):
             print("Circles Crash "+str(speed));
             speed = 1
+            player1alive = False
     for m in mountainice:
         m.move(mdx,mdy)
     mytime = str(time.time()-starttime)[:5]
+    if checkfinishline():
+       print("Finished with time = "+mytime)
+       player1alive = False
     canvastext.itemconfigure(timetext, text = mytime+" s")
     mainwin.after(refreshrate,timerupdate)
 
@@ -174,7 +190,7 @@ def mykey(event):
     global theta, speed
     if event.char == "s":
         speed = speed - 2
-        if speed <= 1: speed = 1
+        if speed <= 0: speed = 0
     if event.char == "d":
         player1.theta = player1.theta + 45 # player rotate left
         if player1.theta > 270+45: player1.theta = 270+45
