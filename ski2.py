@@ -1,6 +1,5 @@
 from tkinter import *
 import random
-import os
 import time
 import math
 
@@ -92,60 +91,52 @@ class GameObject:
 xshift = -200   # move all objects in mountain by a fixed amount            
 # mountain ice
 mountainice = []
+finishline = GameObject("FinishLine.png",x=400,y=30*(mountainheight+6)+400)
+mountainice.append(finishline)
 
-def adddirt(xloc=400,yloc=400):
-    icecircle = GameObject("circle.png",x=xloc+xshift,y=yloc)
-    icecircle.collisioncirclelist.append((16,0,0))
-    #icecircle.showcollisioncircles() # for debugging collisions
-    mountainice.extend([icecircle])
+def addelement(mylist,filename, xloc= 400, yloc = 400):
+    img = GameObject(filename,x=xloc+xshift,y=yloc)
+    if filename == "flag1.png":
+        img.collisioncirclelist.append((11,2,6))
+    if filename == "tree.png":
+        img.collisioncirclelist.extend([(11,2,10),(6,2,-6)])
+    if filename == "circle.png":
+        img.collisioncirclelist.append((16,0,0))
+    #img.showcollisioncircles()  # for debugging collisions
+    mylist.append(img)
 
 # add dirt
 for i in range(24):
     for j in range(int(30*mountainheight/50)):
         if random.randint(1,10) == 1:
-          adddirt(i*50+20,j*50+500)
+          addelement(mountainice,"circle.png",i*50+20,j*50+500)
              
 player1 = GameObject("skier.png","skier2.png","skier3.png",x=400,y=200)
 player1.collisioncirclelist.append((7,2,0))
 #player1.showcollisioncircles()    # for debugging collisions
         
-finishline = GameObject("FinishLine.png",x=400,y=30*(mountainheight+6)+400)
+
 
 # create mountain obstacles
 mountain = []
 
-mountain.append(finishline)
-
-
-def addflag(xloc=400,yloc=400):
-    img = GameObject("flag1.png",x=xloc+xshift,y=yloc)
-    img.collisioncirclelist.append((11,2,6))
-    #img.showcollisioncircles()  # for debugging collisions
-    mountain.append(img)
-
-def addtree(xloc=400,yloc=400):
-    img = GameObject("tree.png",x=xloc+xshift,y=yloc)
-    img.collisioncirclelist.extend([(11,2,10),(6,2,-6)])
-    #img.showcollisioncircles()  # for debugging collisions
-    mountain.append(img)
-
 def addwalls():
     for j in range(int(30*mountainheight/35)+10):
-        addtree(10,j*35+400)  # left
-        addtree(1200,j*35+400) # right
+        addelement(mountain,"tree.png",10,j*35+400)  # left
+        addelement(mountain,"tree.png",1200,j*35+400) # right
     for j in range(35):  
-        addtree(j*35,30*(mountainheight+10)+400) # bottom
+        addelement(mountain,"tree.png",j*35,30*(mountainheight+10)+400) # bottom
 
 
 addwalls()
-# add trees and flags
+# add trees and flags to mountain
 for i in range(40):
     for j in range(mountainheight):
         r = random.randint(1,treedensity)
         if r == 1:
-            addflag(i*30+20,j*30+500)
+            addelement(mountain,"flag1.png",i*30+20,j*30+500)
         if r == 2:
-            addtree(i*30+20,j*30+500)  
+            addelement(mountain,"tree.png",i*30+20,j*30+500)  
     
 def checkcollisioncircles(object1, object2):
     for c1 in object1.collisioncirclelist:
@@ -173,21 +164,25 @@ def timerupdate():
     for m in mountain:
         m.move(mdx,mdy)
         if checkcollisioncircles(m,player1):
-            print("Circles Crash "+str(speed));
+            print("You Crashed!");
             speed = 1
             player1alive = False
     for m in mountainice:
         m.move(mdx,mdy)
     mytime = str(time.time()-starttime)[:5]
     if checkfinishline():
-       print("Finished with time = "+mytime)
+       print("Finished!")
        player1alive = False
     canvastext.itemconfigure(timetext, text = mytime+" s")
     mainwin.after(refreshrate,timerupdate)
 
 
 def mykey(event):
-    global theta, speed
+    global theta, speed, player1alive
+    if event.char == "y" and player1alive == False:
+       player1alive = True
+       mountain.clear()
+       timerupdate()
     if event.char == "s":
         speed = speed - 2
         if speed <= 0: speed = 0
