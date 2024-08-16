@@ -9,8 +9,10 @@ refreshrate = 20 # in ms, normally = 20
 treedensity = 40 # higher = less trees ;), normally = 40
 #################################################
 
-besttime = 0
+besttime = 9999
+currenttime = 0
 starttime = time.time()
+speed = 1  # mountain is moving up at 1 pixel per 20ms
 player1alive = True
 
 mainwin = Tk(className=" Ski")
@@ -38,13 +40,14 @@ def printscore():
     printscr("Keyboard Controls: a,s,d",70,28,"white")
     printscr("Left (a)      Slow Down (s)      Right (d)",15,58,"white")
     printscr("Time: ",600,24,"white")
-    printscr("Best: "+str(besttime)+" s",600,58,"white")
+    printscr("Best: ",600,58,"white")
 
 timetext = canvastext.create_text(660,24,text="0ms",fill="white",font=font1,anchor="sw")
+besttimetext = canvastext.create_text(660,58,text="9999ms",fill="white",font=font1,anchor="sw")
 printscore()
 
 
-speed = 1  # mountain is moving up at 1 pixel per 20ms
+
 
 
 # player class (template)
@@ -105,11 +108,13 @@ def addelement(mylist,filename, xloc= 400, yloc = 400):
     #img.showcollisioncircles()  # for debugging collisions
     mylist.append(img)
 
-# add dirt
-for i in range(24):
-    for j in range(int(30*mountainheight/50)):
-        if random.randint(1,10) == 1:
-          addelement(mountainice,"circle.png",i*50+20,j*50+500)
+def adddirt():
+  for i in range(24):
+      for j in range(int(30*mountainheight/50)):
+          if random.randint(1,10) == 1:
+             addelement(mountainice,"circle.png",i*50+20,j*50+500)
+
+adddirt()
              
 player1 = GameObject("skier.png","skier2.png","skier3.png",x=400,y=200)
 player1.collisioncirclelist.append((7,2,0))
@@ -130,14 +135,18 @@ def addwalls():
 
 addwalls()
 # add trees and flags to mountain
-for i in range(40):
+
+def addobstacles():
+  for i in range(40):
     for j in range(mountainheight):
         r = random.randint(1,treedensity)
         if r == 1:
             addelement(mountain,"flag1.png",i*30+20,j*30+500)
         if r == 2:
             addelement(mountain,"tree.png",i*30+20,j*30+500)  
-    
+
+addobstacles()
+
 def checkcollisioncircles(object1, object2):
     for c1 in object1.collisioncirclelist:
         for c2 in object2.collisioncirclelist:  # c0 = r, c1 = dx, c2 = dy
@@ -155,7 +164,7 @@ def checkfinishline():
         return False
 
 def timerupdate():
-    global speed, player1alive
+    global speed, player1alive, currenttime
     if player1alive == False: return
     speed = speed + 0.03
     if speed >= 8: speed = 8
@@ -169,19 +178,32 @@ def timerupdate():
             player1alive = False
     for m in mountainice:
         m.move(mdx,mdy)
-    mytime = str(time.time()-starttime)[:5]
+    currenttime = time.time()-starttime
+    mytimestr = str(currenttime)[:5]
+    mybesttimestr = str(besttime)[:5]
     if checkfinishline():
        print("Finished!")
        player1alive = False
-    canvastext.itemconfigure(timetext, text = mytime+" s")
+    canvastext.itemconfigure(timetext, text = mytimestr+" s")
+    canvastext.itemconfigure(besttimetext, text = mybesttimestr+" s") 
     mainwin.after(refreshrate,timerupdate)
 
 
 def mykey(event):
-    global theta, speed, player1alive
+    global theta, speed, player1alive, finishline, starttime, besttime
     if event.char == "y" and player1alive == False:
        player1alive = True
+       if currenttime < besttime: besttime = currenttime
+       starttime = time.time()
+       speed = 1  # mountain is moving up at 1 pixel per 20ms
        mountain.clear()
+       mountainice.clear()
+       adddirt()
+       addwalls()
+       addobstacles()
+       finishline = GameObject("FinishLine.png",x=400,y=30*(mountainheight+6)+400)
+                  # garbage collector frees memory for all "old" objects, don't need to "free" object
+       mountainice.append(finishline)
        timerupdate()
     if event.char == "s":
         speed = speed - 2
