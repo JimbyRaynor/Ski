@@ -6,11 +6,10 @@ import math
 ### constant parameters ##########################
 mountainheight = 40   # in metres, approx, normally = 80
 refreshrate = 20 # in ms, normally = 20
-treedensity = 40 # higher = less trees ;), normally = 40
+treedensity = 40 # higher = less trees and fences ;), normally = 40
 #################################################
 
-besttime = 9999
-currenttime = 0
+besttime = 99.9
 starttime = time.time()
 speed = 1  # mountain is moving up at 1 pixel per 20ms
 player1alive = True
@@ -22,33 +21,25 @@ mainwin.geometry("800x680")
 canvas1= Canvas(mainwin,width=800,height=600, bg = "white")
 canvas1.place(x=0,y=0)
 
-# status text box frame
-canvas2= Canvas(mainwin,width=798,height=78, bg = "grey")
-canvas2.place(x=0,y=600)
-
 # Print text (labels) on screen
 canvastext= Canvas(mainwin,width=784,height=64, bg = "dark blue")
 canvastext.place(x=6,y=607)
 font1 = ("Arial",16,"bold")
-fontBIG = ("Arial",64,"bold")
 fontMED = ("Arial",30,"bold")
-def printscr(mytext,x,y,mycolour):
-    canvastext.create_text(x,y,text=mytext, fill=mycolour,font=font1, anchor="sw") 
-def printBIG(mytext,x,y,mycolour):
-    canvas1.create_text(x,y,text=mytext, fill=mycolour,font=fontBIG, anchor="sw") 
-def printMED(mytext,x,y,mycolour):
-    canvas1.create_text(x,y,text=mytext, fill=mycolour,font=fontMED, anchor="sw") 
+def printscr(mytext,x,y):
+    canvastext.create_text(x,y,text=mytext, fill="white",font=font1, anchor="sw") 
+def printMED(mytext,x,y):
+    canvas1.create_text(x,y,text=mytext, fill="black",font=fontMED) 
 
 
 
 def printscore():
-    printscr("Keyboard Controls: a,s,d",70,28,"white")
-    printscr("Left (a)      Slow Down (s)      Right (d)",15,58,"white")
-    printscr("Time: ",600,24,"white")
-    printscr("Best: ",600,58,"white")
+    printscr("Keyboard Controls: a (left), d (right)",100,45)
+    printscr("Time: ",600,30)
+    printscr("Best: ",600,58)
 
-timetext = canvastext.create_text(660,24,text="0ms",fill="white",font=font1,anchor="sw")
-besttimetext = canvastext.create_text(660,58,text="9999ms",fill="white",font=font1,anchor="sw")
+timetext = canvastext.create_text(660,30,text="",fill="white",font=font1,anchor="sw")
+besttimetext = canvastext.create_text(660,58,text="",fill="white",font=font1,anchor="sw")
 printscore()
 
 # player class (template)
@@ -130,6 +121,8 @@ def addwalls():
         addelement(mountain,"tree.png",1200,j*35+400) # right
     for j in range(35):  
         addelement(mountain,"tree.png",j*35,30*(mountainheight+10)+400) # bottom
+    for i in range(mountainheight):
+        addelement(mountain,"tree.png",500+random.randint(1,10)*35,30*i+400)
 
 addwalls()
 # add trees and flags to mountain
@@ -182,7 +175,7 @@ def startagain():
     
 
 def timerupdate():
-    global speed, player1alive, currenttime, besttime
+    global speed, player1alive, besttime
     if player1alive == False: return
     speed = speed + 0.03
     if speed >= 8: speed = 8
@@ -191,8 +184,8 @@ def timerupdate():
     for m in mountain:
         m.move(mdx,mdy)
         if checkcollisioncircles(m,player1):
-            printBIG("You Crashed!",120,150,"red")
-            printMED("Press SPACE to start again",120,200,"red")
+            printMED("You Crashed!",400,50)
+            printMED("Press SPACE to start again",400,100)
             player1alive = False
     for m in mountainice:
         m.move(mdx,mdy)
@@ -203,7 +196,8 @@ def timerupdate():
        print("Finished!")
        if currenttime < besttime:
           besttime = currenttime
-       printMED("Press SPACE to start again",120,180,"red")
+       printMED("Finished!",400,50)
+       printMED("Press SPACE to start again",400,100)
        player1alive = False
     canvastext.itemconfigure(timetext, text = mytimestr+" s")
     canvastext.itemconfigure(besttimetext, text = mybesttimestr+" s") 
@@ -214,9 +208,6 @@ def mykey(event):
     global theta, speed, player1alive, finishline, starttime, besttime, player1
     if event.char == " " and player1alive == False:
       startagain()
-    if event.char == "s":
-        speed = speed - 2
-        if speed <= 0: speed = 0
     if event.char == "d":
         player1.theta = player1.theta + 45 # player rotate left
         if player1.theta > 270+45: player1.theta = 270+45
