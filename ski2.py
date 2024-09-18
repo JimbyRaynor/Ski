@@ -25,11 +25,14 @@ canvas1.place(x=0,y=0)
 canvastext= Canvas(mainwin,width=784,height=64, bg = "dark blue")
 canvastext.place(x=6,y=607)
 font1 = ("Arial",16,"bold")
-fontMED = ("Arial",30,"bold")
+fontMED = ("Arial",20,"bold")
+fontBIG = ("Arial",80,"bold")
 def printscr(mytext,x,y):
     canvastext.create_text(x,y,text=mytext, fill="white",font=font1, anchor="sw") 
 def printMED(mytext,x,y):
-    canvas1.create_text(x,y,text=mytext, fill="black",font=fontMED) 
+    canvas1.create_text(x,y,text=mytext, fill="black",font=fontMED)
+def printBIG(mytext,x,y):
+    canvas1.create_text(x,y,text=mytext, fill="red",font=fontBIG) 
 
 
 
@@ -184,8 +187,8 @@ def timerupdate():
     for m in mountain:
         m.move(mdx,mdy)
         if checkcollisioncircles(m,player1):
-            printMED("You Crashed!",400,50)
-            printMED("Press SPACE to start again",400,100)
+            printBIG("Game Over",400,300)
+            printMED("Press SPACE to start again",400,360)
             player1alive = False
     for m in mountainice:
         m.move(mdx,mdy)
@@ -196,8 +199,8 @@ def timerupdate():
        print("Finished!")
        if currenttime < besttime:
           besttime = currenttime
-       printMED("Finished!",400,50)
-       printMED("Press SPACE to start again",400,100)
+       printBIG("Finished!",400,450)
+       printMED("Press SPACE to start again",400,510)
        player1alive = False
     canvastext.itemconfigure(timetext, text = mytimestr+" s")
     canvastext.itemconfigure(besttimetext, text = mybesttimestr+" s") 
