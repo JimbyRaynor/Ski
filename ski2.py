@@ -3,14 +3,20 @@ import random
 import time
 import math
 
+## score, not time
+## levels: increase length of skifield
+
+
 ### constant parameters ##########################
 mountainheight = 40   # in metres, approx, normally = 80
 refreshrate = 20 # in ms, normally = 20
 treedensity = 40 # higher = less trees and fences ;), normally = 40
 #################################################
 
-besttime = 99.9
-starttime = time.time()
+score = 0
+highscore = 0
+level = 1
+
 speed = 1  # mountain is moving up at 1 pixel per 20ms
 player1alive = True
 
@@ -37,12 +43,13 @@ def printBIG(mytext,x,y):
 
 
 def printscore():
-    printscr("Keyboard Controls: a (left), d (right)",100,45)
-    printscr("Time: ",600,30)
-    printscr("Best: ",600,58)
+    printscr("Aim for finish line at base of mountain",100,30)
+    printscr("Keyboard Controls: a (left), d (right)",100,60)
+    printscr("Score: ",600,30)
+    printscr("Hi-Score: ",600,58)
 
-timetext = canvastext.create_text(660,30,text="",fill="white",font=font1,anchor="sw")
-besttimetext = canvastext.create_text(660,58,text="",fill="white",font=font1,anchor="sw")
+scoretext = canvastext.create_text(670,30,text="",fill="white",font=font1,anchor="sw")
+besttimetext = canvastext.create_text(700,58,text="",fill="white",font=font1,anchor="sw")
 printscore()
 
 # player class (template)
@@ -98,18 +105,8 @@ def addelement(mylist,filename, xloc= 400, yloc = 400):
         img.collisioncirclelist.append((11,2,6))
     if filename == "tree.png":
         img.collisioncirclelist.extend([(11,2,10),(6,2,-6)])
-    if filename == "circle.png":
-        img.collisioncirclelist.append((16,0,0))
     #img.showcollisioncircles()  # for debugging collisions
     mylist.append(img)
-
-def adddirt():
-  for i in range(24):
-      for j in range(int(30*mountainheight/50)):
-          if random.randint(1,10) == 1:
-             addelement(mountainice,"circle.png",i*50+20,j*50+500)
-
-adddirt()
              
 player1 = GameObject("skier.png","skier2.png","skier3.png",x=400,y=200)
 player1.collisioncirclelist.append((7,2,0))
@@ -157,53 +154,59 @@ def checkfinishline():
     else:
         return False
 
+printMED("Level: "+str(level),700,20)
+
 def startagain():
-    global speed, player1alive, finishline, player1, starttime
+    global speed, player1alive, finishline, player1
     speed = 1
     player1alive = True
     canvas1.delete("all")
-    starttime = time.time()
     speed = 1  # mountain is moving up at 1 pixel per 20ms
     mountain.clear()
     mountainice.clear()
     finishline = GameObject("FinishLine.png",x=400,y=30*(mountainheight+6)+400)
      # garbage collector frees memory for all "old" objects, don't need to "free" object
     mountainice.append(finishline)
-    adddirt()
+    #adddirt()
     player1 = GameObject("skier.png","skier2.png","skier3.png",x=400,y=200)
     player1.collisioncirclelist.append((7,2,0))
     addwalls()
     addobstacles()
     timerupdate()
+    printMED("Level: "+str(level),700,20)
     
 
 def timerupdate():
-    global speed, player1alive, besttime
+    global speed, player1alive, level, score, highscore, mountainheight
     if player1alive == False: return
     speed = speed + 0.03
+    if player1.theta == 270:
+        score = score + 4
+    else:
+        score = score + 1
+    if score > highscore: highscore = score
     if speed >= 8: speed = 8
     mdy = speed*math.sin(player1.theta*math.pi/180)  # convert to radians
     mdx = -speed*math.cos(player1.theta*math.pi/180)
     for m in mountain:
         m.move(mdx,mdy)
         if checkcollisioncircles(m,player1):
-            printBIG("Game Over",400,300)
+            printBIG("Crashed!",400,300)
             printMED("Press SPACE to start again",400,360)
             player1alive = False
+            score = 0
+            level = 1
+            mountainheight = 40
     for m in mountainice:
         m.move(mdx,mdy)
-    currenttime = time.time()-starttime
-    mytimestr = str(currenttime)[:5]
-    mybesttimestr = str(besttime)[:5]
     if checkfinishline():
-       print("Finished!")
-       if currenttime < besttime:
-          besttime = currenttime
        printBIG("Finished!",400,450)
-       printMED("Press SPACE to start again",400,510)
+       printMED("Press SPACE for NEXT level",400,510)
        player1alive = False
-    canvastext.itemconfigure(timetext, text = mytimestr+" s")
-    canvastext.itemconfigure(besttimetext, text = mybesttimestr+" s") 
+       mountainheight = mountainheight + 60
+       level = level + 1
+    canvastext.itemconfigure(scoretext, text = str(score))
+    canvastext.itemconfigure(besttimetext, text = str(highscore)) 
     mainwin.after(refreshrate,timerupdate)
 
 
